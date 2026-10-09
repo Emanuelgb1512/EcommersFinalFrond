@@ -1,0 +1,87 @@
+<app-navbar />
+
+<main class="page container">
+  <h1>Tu carrito</h1>
+
+  @if (carrito.items().length === 0) {
+    <div class="vacio">
+      <app-icon name="cart" [size]="48" />
+      <h2>Tu carrito está vacío</h2>
+      <p>Agrega productos desde la tienda y aparecerán aquí.</p>
+      <a routerLink="/" fragment="productos" class="btn btn-orange btn-lg">Ir a la tienda</a>
+    </div>
+  } @else {
+    <div class="layout">
+      <section class="lista">
+        @for (i of carrito.items(); track i.productoId) {
+          <article class="item">
+            @if (i.imagenUrl) {
+              <img class="thumb" [src]="i.imagenUrl" [alt]="i.nombre" />
+            } @else {
+              <span class="thumb"><app-icon name="image" [size]="30" /></span>
+            }
+
+            <div class="info">
+              <h3>{{ i.nombre }}</h3>
+              <p class="unit">$ {{ i.precioUnitario | number: '1.0-0' }} c/u</p>
+              @if (!i.activo) {
+                <p class="aviso">Este producto ya no está disponible.</p>
+              } @else if (i.cantidad > i.stock) {
+                <p class="aviso">Solo quedan {{ i.stock }} unidades.</p>
+              }
+            </div>
+
+            <div class="cantidad">
+              <button type="button" (click)="bajar(i)" aria-label="Menos">−</button>
+              <span>{{ i.cantidad }}</span>
+              <button type="button" (click)="subir(i)" aria-label="Más">+</button>
+            </div>
+
+            <p class="subtotal">$ {{ i.precioUnitario * i.cantidad | number: '1.0-0' }}</p>
+
+            <button type="button" class="quitar" (click)="quitar(i)" aria-label="Quitar del carrito" title="Quitar">
+              <app-icon name="trash" [size]="18" />
+            </button>
+          </article>
+        }
+        <a routerLink="/" fragment="productos" class="seguir"><app-icon name="arrow-left" [size]="16" /> Seguir comprando</a>
+      </section>
+
+      <aside class="resumen">
+        <h2>Resumen del pedido</h2>
+
+        <div class="fila">
+          <span>Subtotal ({{ carrito.cantidadTotal() }} {{ carrito.cantidadTotal() === 1 ? 'producto' : 'productos' }})</span>
+          <span>$ {{ carrito.subtotal() | number: '1.0-0' }}</span>
+        </div>
+        <div class="fila">
+          <span>IVA ({{ ivaPct }}%)</span>
+          <span>$ {{ carrito.iva() | number: '1.0-0' }}</span>
+        </div>
+        <div class="fila total">
+          <span>Total</span>
+          <span>$ {{ carrito.total() | number: '1.0-0' }}</span>
+        </div>
+        <p class="nota">Los precios de la tienda no incluyen IVA; se suma en el total.</p>
+
+        @if (auth.estaLogueado()) {
+          <button type="button" class="btn btn-orange btn-block btn-lg" [disabled]="hayProblemas()" (click)="pagar()">
+            Proceder al pago <app-icon name="arrow-right" [size]="18" />
+          </button>
+          @if (hayProblemas()) {
+            <p class="nota error">Revisa los productos marcados antes de continuar.</p>
+          }
+        } @else {
+          <div class="necesita-cuenta">
+            <app-icon name="lock" [size]="20" />
+            <p>Para comprar necesitas iniciar sesión o crear una cuenta. Tu carrito se conservará.</p>
+          </div>
+          <a routerLink="/login" [queryParams]="{ returnUrl: '/checkout' }" class="btn btn-orange btn-block btn-lg">Iniciar sesión</a>
+          <a routerLink="/registro" [queryParams]="{ returnUrl: '/checkout' }" class="btn btn-outline btn-block btn-lg">Crear cuenta</a>
+        }
+      </aside>
+    </div>
+  }
+</main>
+
+<app-footer />

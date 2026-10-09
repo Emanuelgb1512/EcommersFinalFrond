@@ -1,0 +1,162 @@
+<header class="head">
+  <div>
+    <h1>Pedidos y pagos</h1>
+    <p>{{ pedidos().length }} pedidos registrados</p>
+  </div>
+  <button type="button" class="btn btn-outline btn-sm" (click)="cargar()">
+    <app-icon name="refresh" [size]="16" /> Actualizar
+  </button>
+</header>
+
+<div class="cards">
+  <button type="button" class="stat" [class.sel]="filtroPago() === ''" (click)="filtroPago.set('')">
+    <span>Todos los pedidos</span>
+    <strong>{{ resumen().total }}</strong>
+    <small>Ver todos</small>
+  </button>
+  <button type="button" class="stat amarillo" [class.sel]="filtroPago() === 'Pendiente'" (click)="filtroPago.set('Pendiente')">
+    <span>Pagos pendientes</span>
+    <strong>{{ resumen().pendiente.n }}</strong>
+    <small>$ {{ resumen().pendiente.monto | number: '1.0-0' }}</small>
+  </button>
+  <button type="button" class="stat azul" [class.sel]="filtroPago() === 'En proceso'" (click)="filtroPago.set('En proceso')">
+    <span>Pagos en proceso</span>
+    <strong>{{ resumen().proceso.n }}</strong>
+    <small>$ {{ resumen().proceso.monto | number: '1.0-0' }}</small>
+  </button>
+  <button type="button" class="stat verde" [class.sel]="filtroPago() === 'Aprobado'" (click)="filtroPago.set('Aprobado')">
+    <span>Pagos realizados</span>
+    <strong>{{ resumen().aprobado.n }}</strong>
+    <small>$ {{ resumen().aprobado.monto | number: '1.0-0' }}</small>
+  </button>
+</div>
+
+<div class="toolbar">
+  <div class="buscar">
+    <app-icon name="search" [size]="18" />
+    <input type="text" placeholder="Buscar por #pedido, cliente o correo..."
+           [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
+  </div>
+  <select class="form-control" [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
+    <option value="">Todos los estados</option>
+    @for (e of estadosPedido; track e) { <option [value]="e">{{ e }}</option> }
+  </select>
+</div>
+
+<section class="panel">
+  @if (cargando()) {
+    <p class="vacio">Cargando...</p>
+  } @else if (filtrados().length === 0) {
+    <p class="vacio">No hay pedidos con esos filtros.</p>
+  } @else {
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Método</th>
+            <th>Total</th>
+            <th>Pago</th>
+            <th>Estado</th>
+            <th class="der"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of filtrados(); track p.id) {
+            <tr>
+              <td><strong>#{{ p.id }}</strong></td>
+              <td>{{ fecha(p.fecha) | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td><div class="cliente"><strong>{{ p.clienteNombre }}</strong><small>{{ p.clienteEmail }}</small></div></td>
+              <td>{{ p.metodoPago }}</td>
+              <td><strong>$ {{ p.total | number: '1.0-0' }}</strong></td>
+              <td><span [class]="'badge ' + claseEstado(p.estadoPago)">{{ etiquetaPago(p.estadoPago) }}</span></td>
+              <td><span [class]="'badge ' + claseEstado(p.estado)">{{ p.estado }}</span></td>
+              <td class="der"><button type="button" class="btn btn-dark btn-sm" (click)="abrir(p)">Ver detalle</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (seleccionado(); as p) {
+  <div class="overlay" (click)="cerrar()">
+    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="m-head">
+        <div>
+          <h2>Pedido #{{ p.id }}</h2>
+          <small>{{ fecha(p.fecha) | date: 'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+        <button type="button" class="cerrar" (click)="cerrar()" aria-label="Cerrar"><app-icon name="close" [size]="20" /></button>
+      </header>
+
+      <div class="m-body">
+        <div class="bloques">
+          <div class="bloque">
+            <h4>Cliente y envío</h4>
+            <p><strong>{{ p.clienteNombre }}</strong></p>
+            <p>{{ p.clienteEmail }}</p>
+            <p>{{ p.telefono }}</p>
+            <p>{{ p.direccionEnvio }}, {{ p.ciudad }}</p>
+          </div>
+          <div class="bloque">
+            <h4>Pago</h4>
+            <p>Método: <strong>{{ p.metodoPago }}</strong></p>
+            <p>Referencia: {{ p.referencia }}</p>
+            <p>Estado: <span [class]="'badge ' + claseEstado(p.estadoPago)">{{ etiquetaPago(p.estadoPago) }}</span></p>
+          </div>
+        </div>
+
+        <div class="productos">
+          @for (i of p.items; track i.productoId) {
+            <div class="linea">
+              @if (i.imagenUrl) {
+                <img [src]="i.imagenUrl" [alt]="i.nombre" />
+              } @else {
+                <span class="ph"><app-icon name="image" [size]="18" /></span>
+              }
+              <div class="d"><strong>{{ i.nombre }}</strong><small>{{ i.cantidad }} × $ {{ i.precioUnitario | number: '1.0-0' }}</small></div>
+              <span>$ {{ i.subtotal | number: '1.0-0' }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="totales">
+          <div><span>Subtotal</span><span>$ {{ p.subtotal | number: '1.0-0' }}</span></div>
+          <div><span>IVA</span><span>$ {{ p.impuestos | number: '1.0-0' }}</span></div>
+          <div class="t"><span>Total</span><span>$ {{ p.total | number: '1.0-0' }}</span></div>
+        </div>
+
+        <div class="controles">
+          <div class="ctrl">
+            <label>Estado del pedido</label>
+            <div class="fila-ctrl">
+              <select class="form-control" [(ngModel)]="nuevoEstado" [disabled]="p.estado === 'Cancelado' || p.estado === 'Entregado'">
+                @for (e of estadosPedido; track e) { <option [value]="e">{{ e }}</option> }
+              </select>
+              <button type="button" class="btn btn-orange btn-sm"
+                      [disabled]="guardando() || nuevoEstado === p.estado || p.estado === 'Cancelado' || p.estado === 'Entregado'"
+                      (click)="guardarEstado()">Guardar</button>
+            </div>
+          </div>
+
+          <div class="ctrl">
+            <label>Estado del pago</label>
+            <div class="fila-ctrl">
+              <select class="form-control" [(ngModel)]="nuevoPago" [disabled]="p.estado === 'Cancelado'">
+                @if (!estadosPago.includes(nuevoPago)) { <option [value]="nuevoPago">{{ etiquetaPago(nuevoPago) }}</option> }
+                @for (e of estadosPago; track e) { <option [value]="e">{{ etiquetaPago(e) }}</option> }
+              </select>
+              <button type="button" class="btn btn-orange btn-sm"
+                      [disabled]="guardando() || nuevoPago === p.estadoPago || p.estado === 'Cancelado'"
+                      (click)="guardarPago()">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

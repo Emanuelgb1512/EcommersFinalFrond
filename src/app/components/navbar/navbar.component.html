@@ -1,0 +1,78 @@
+<div class="topbar" [class.oculta]="scrolled()">
+  <div class="container">
+    <span><app-icon name="truck" [size]="15" /> Envíos a todo el país</span>
+    <span><app-icon name="lock" [size]="15" /> Pago 100% seguro</span>
+    <span class="solo-desktop"><app-icon name="refresh" [size]="15" /> Cambios y devoluciones</span>
+  </div>
+</div>
+
+<header class="navbar" [class.scrolled]="scrolled()">
+  <div class="container barra">
+    <a routerLink="/" class="marca" aria-label="SportZone inicio"><app-logo /></a>
+
+    <nav class="menu">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+      <a routerLink="/" fragment="productos">Productos</a>
+      <a routerLink="/categorias" routerLinkActive="active">Categorías</a>
+    </nav>
+
+    <div class="search">
+      <app-icon name="search" [size]="18" />
+      <input #q type="text" placeholder="Buscar balones, calzado, ropa..." (keyup.enter)="buscar(q.value)" />
+      <button type="button" (click)="buscar(q.value)">Buscar</button>
+    </div>
+
+    <div class="acciones">
+      <a routerLink="/carrito" class="icon-btn" [class.bump]="bump()" aria-label="Carrito">
+        <app-icon name="cart" [size]="22" />
+        @if (carrito.cantidadTotal() > 0) {
+          <span class="cart-count">{{ carrito.cantidadTotal() }}</span>
+        }
+      </a>
+
+      @if (auth.estaLogueado()) {
+        @if (auth.esAdmin()) {
+          <a routerLink="/admin" class="btn btn-dark btn-sm">
+            <app-icon name="shield" [size]="16" /> <span class="txt">Panel admin</span>
+          </a>
+        }
+
+        <div class="user-menu">
+          <button type="button" class="avatar-btn" (click)="alternarMenu()" aria-label="Mi cuenta">
+            <app-avatar [nombre]="auth.usuario()?.nombre ?? ''" [fotoUrl]="auth.usuario()?.fotoUrl" [size]="42" />
+          </button>
+
+          @if (menuAbierto()) {
+            <div class="dropdown">
+              <div class="dd-head">
+                <strong>{{ auth.usuario()?.nombre }}</strong>
+                <span>{{ auth.usuario()?.email }}</span>
+              </div>
+              <a routerLink="/perfil" (click)="menuAbierto.set(false)">
+                <app-icon name="user" [size]="17" /> Mi perfil
+              </a>
+              <a routerLink="/mis-pedidos" (click)="menuAbierto.set(false)">
+                <app-icon name="truck" [size]="17" /> Mis pedidos
+              </a>
+              @if (auth.esAdmin()) {
+                <a routerLink="/admin" (click)="menuAbierto.set(false)">
+                  <app-icon name="shield" [size]="17" /> Panel de administración
+                </a>
+              }
+              <button type="button" (click)="salir()">
+                <app-icon name="logout" [size]="17" /> Cerrar sesión
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <a routerLink="/login" class="btn btn-outline btn-sm">
+          <app-icon name="user" [size]="16" /> <span class="txt">Iniciar sesión</span>
+        </a>
+        <a routerLink="/admin/login" class="btn btn-dark btn-sm">
+          <app-icon name="shield" [size]="16" /> <span class="txt">Administrador</span>
+        </a>
+      }
+    </div>
+  </div>
+</header>

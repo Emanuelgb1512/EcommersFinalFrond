@@ -1,0 +1,74 @@
+<app-navbar />
+
+<section class="cab">
+  <div class="container cab-inner">
+    <span class="eyebrow"><i></i> Explora la tienda</span>
+    <h1>Todas las <em>categorías</em></h1>
+    <p>
+      {{ categorias().length }} categorías y {{ totalProductos() }} productos para tu deporte favorito.
+    </p>
+    <div class="buscar">
+      <app-icon name="search" [size]="18" />
+      <input #q type="text" placeholder="Buscar categoría (fútbol, running, yoga...)" (input)="buscar(q.value)" />
+    </div>
+  </div>
+</section>
+
+<main class="container cuerpo">
+  <!-- ACCESOS SEGÚN EL TIPO DE USUARIO -->
+  <section class="accesos">
+    <h2 appReveal>{{ tituloAccesos() }}</h2>
+    <div class="acc-grid">
+      @for (a of accesos(); track a.titulo; let i = $index) {
+        <a class="acceso" [routerLink]="a.ruta" [queryParams]="a.params" [appReveal]="i * 60">
+          <span class="ico"><app-icon [name]="a.icono" [size]="22" /></span>
+          <span class="textos"><strong>{{ a.titulo }}</strong><small>{{ a.desc }}</small></span>
+          <app-icon name="chevron-right" [size]="18" />
+        </a>
+      }
+    </div>
+  </section>
+
+  <!-- CATEGORÍAS -->
+  <section class="categorias">
+    <h2 appReveal>Elige tu deporte</h2>
+
+    @if (cargando()) {
+      <div class="cat-grid">
+        @for (n of esqueletos; track n) { <div class="skeleton cat-sk"></div> }
+      </div>
+    } @else if (error()) {
+      <p class="estado error">No se pudieron cargar las categorías. Verifica que la API esté en ejecución.</p>
+    } @else if (filtradas().length === 0) {
+      <div class="estado">
+        <app-icon name="tag" [size]="44" />
+        <h3>No encontramos esa categoría</h3>
+        <p>Prueba con otro nombre.</p>
+      </div>
+    } @else {
+      <div class="cat-grid">
+        @for (c of filtradas(); track c.id; let i = $index) {
+          <a class="cat" routerLink="/" [queryParams]="{ categoriaId: c.id }" fragment="productos" [appReveal]="(i % 4) * 70">
+            <span class="inicial">{{ c.nombre.charAt(0) }}</span>
+            <div class="txt">
+              <h3>{{ c.nombre }}</h3>
+              <p>{{ c.descripcion || 'Explora esta categoría' }}</p>
+            </div>
+            <div class="pie">
+              <span class="conteo">
+                @if (c.cantidadProductos > 0) {
+                  {{ c.cantidadProductos }} {{ c.cantidadProductos === 1 ? 'producto' : 'productos' }}
+                } @else {
+                  Próximamente
+                }
+              </span>
+              <span class="flecha"><app-icon name="arrow-right" [size]="18" /></span>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </section>
+</main>
+
+<app-footer />

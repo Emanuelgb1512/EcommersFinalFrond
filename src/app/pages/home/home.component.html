@@ -1,0 +1,248 @@
+<app-navbar />
+
+<!-- HERO -->
+<section class="hero">
+  <span class="shape s1"></span>
+  <span class="shape s2"></span>
+  <span class="shape s3"></span>
+
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <span class="eyebrow"><i></i> Nueva temporada</span>
+      <h1>Equípate<br />para <em>ganar</em></h1>
+      <p>Balones, calzado, ropa e implementos de las mejores categorías deportivas. Calidad que se nota en cada partido.</p>
+      <div class="hero-cta">
+        <a routerLink="/" fragment="productos" class="btn btn-orange btn-lg">
+          Ver productos <app-icon name="arrow-right" [size]="18" />
+        </a>
+        <a routerLink="/categorias" class="btn btn-outline-light btn-lg">Explorar categorías</a>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <div class="ring r2"></div>
+      <div class="ring r1"></div>
+      <div class="disc">
+        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+      </div>
+      <div class="float f1">
+        <span class="ico"><app-icon name="truck" [size]="20" /></span>
+        <div><strong>Envíos nacionales</strong>A donde estés</div>
+      </div>
+      <div class="float f2">
+        <span class="ico"><app-icon name="lock" [size]="20" /></span>
+        <div><strong>Pago seguro</strong>Compra tranquilo</div>
+      </div>
+      <div class="float f3">
+        <span class="ico"><app-icon name="refresh" [size]="20" /></span>
+        <div><strong>Cambios fáciles</strong>Sin complicaciones</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATÁLOGO -->
+<section class="catalogo" id="productos">
+  <div class="container">
+    <div class="catalogo-head" appReveal>
+      <div>
+        <h2>Nuestros productos</h2>
+        <p class="sub">
+          {{ total() }} {{ total() === 1 ? 'resultado' : 'resultados' }}
+          @if (busqueda()) { para “{{ busqueda() }}” }
+        </p>
+      </div>
+      <div class="orden">
+        <label for="orden">Ordenar por</label>
+        <select id="orden" class="form-control" [value]="orden()" (change)="cambiarOrden($any($event.target).value)">
+          <option value="recientes">Más recientes</option>
+          <option value="precio_asc">Precio: menor a mayor</option>
+          <option value="precio_desc">Precio: mayor a menor</option>
+          <option value="nombre">Nombre (A-Z)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="barra-filtros" appReveal="80">
+      <a routerLink="/categorias" class="ver-cats"><app-icon name="tag" [size]="16" /> Ver categorías</a>
+      @if (categoriaActual(); as nombre) {
+        <span class="filtro-activo">
+          Categoría: <strong>{{ nombre }}</strong>
+          <button type="button" (click)="quitarCategoria()" aria-label="Quitar categoría">
+            <app-icon name="close" [size]="14" />
+          </button>
+        </span>
+      }
+    </div>
+
+    <div class="filtro-precio" appReveal="140">
+      <span>Precio</span>
+      <input #min type="number" min="0" class="form-control" placeholder="Mínimo" (keyup.enter)="aplicarPrecio(min.value, max.value)" />
+      <span>—</span>
+      <input #max type="number" min="0" class="form-control" placeholder="Máximo" (keyup.enter)="aplicarPrecio(min.value, max.value)" />
+      <button type="button" class="btn btn-dark btn-sm" (click)="aplicarPrecio(min.value, max.value)">Aplicar</button>
+      @if (hayFiltros()) {
+        <button type="button" class="limpiar" (click)="min.value = ''; max.value = ''; limpiar()">Limpiar filtros</button>
+      }
+    </div>
+
+    @if (cargando()) {
+      <div class="grid">
+        @for (n of esqueletos; track n) {
+          <div class="card skeleton-card">
+            <div class="skeleton img"></div>
+            <div class="card-body">
+              <div class="skeleton linea corta"></div>
+              <div class="skeleton linea"></div>
+              <div class="skeleton linea media"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (error()) {
+      <p class="estado error">{{ error() }}</p>
+    } @else if (productos().length === 0) {
+      <div class="estado">
+        <app-icon name="box" [size]="44" />
+        <h3>No encontramos productos</h3>
+        <p>Prueba con otros filtros o una búsqueda diferente.</p>
+      </div>
+    } @else {
+      <div class="grid">
+        @for (p of productos(); track p.id; let i = $index) {
+          <article class="card" [appReveal]="(i % 4) * 80">
+            <button type="button" class="card-img" (click)="abrir(p)" [attr.aria-label]="'Ver ' + p.nombre">
+              @if (p.imagenUrl) {
+                <img [src]="p.imagenUrl" [alt]="p.nombre" loading="lazy" />
+              } @else {
+                <span class="sin-imagen"><app-icon name="image" [size]="42" /></span>
+              }
+              @if (p.stock === 0) {
+                <span class="flag agotado">Agotado</span>
+              } @else if (p.stock <= 5) {
+                <span class="flag ultimas">Últimas {{ p.stock }}</span>
+              }
+              <span class="rapida">Vista rápida</span>
+            </button>
+
+            <div class="card-body">
+              @if (p.categoriaNombre) { <span class="card-cat">{{ p.categoriaNombre }}</span> }
+              <h3>{{ p.nombre }}</h3>
+              <p class="precio">$ {{ p.precio | number: '1.0-0' }}</p>
+              <p class="stock">
+                @if (p.stock > 0) { Disponibles: {{ p.stock }} } @else { Sin existencias }
+              </p>
+              <div class="card-actions">
+                <button type="button" class="btn btn-orange btn-sm" [disabled]="p.stock === 0" (click)="agregar(p)">
+                  <app-icon name="cart" [size]="16" /> Agregar
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" (click)="abrir(p)">Ver producto</button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+
+      @if (totalPaginas() > 1) {
+        <nav class="paginacion" aria-label="Paginación">
+          <button type="button" (click)="irAPagina(pagina() - 1)" [disabled]="pagina() === 1" aria-label="Anterior">
+            <app-icon name="chevron-left" [size]="18" />
+          </button>
+          @for (n of paginas(); track n) {
+            <button type="button" [class.activa]="n === pagina()" (click)="irAPagina(n)">{{ n }}</button>
+          }
+          <button type="button" (click)="irAPagina(pagina() + 1)" [disabled]="pagina() === totalPaginas()" aria-label="Siguiente">
+            <app-icon name="chevron-right" [size]="18" />
+          </button>
+        </nav>
+      }
+    }
+  </div>
+</section>
+
+<!-- BENEFICIOS -->
+<section class="beneficios">
+  <div class="container">
+    <div class="ben-grid">
+      <article class="ben" appReveal="0">
+        <span class="ico"><app-icon name="truck" [size]="26" /></span>
+        <h3>Envíos a todo el país</h3>
+        <p>Recibe tus productos donde estés, con seguimiento de tu pedido.</p>
+      </article>
+      <article class="ben" appReveal="100">
+        <span class="ico"><app-icon name="lock" [size]="26" /></span>
+        <h3>Pago seguro</h3>
+        <p>Elige tarjeta, PSE o contraentrega y compra con tranquilidad.</p>
+      </article>
+      <article class="ben" appReveal="200">
+        <span class="ico"><app-icon name="refresh" [size]="26" /></span>
+        <h3>Cambios fáciles</h3>
+        <p>Si algo no es lo que esperabas, lo resolvemos sin complicaciones.</p>
+      </article>
+      <article class="ben" appReveal="300">
+        <span class="ico"><app-icon name="tag" [size]="26" /></span>
+        <h3>Variedad de deportes</h3>
+        <p>Desde fútbol hasta natación: todo el equipamiento en un solo lugar.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- LLAMADO FINAL -->
+<section class="cta">
+  <div class="container">
+    <div class="cta-box" appReveal>
+      <div>
+        <h2>¿Listo para <em>entrenar</em>?</h2>
+        <p>Encuentra todo lo que necesitas para tu próximo reto deportivo.</p>
+      </div>
+      <a routerLink="/categorias" class="btn btn-white btn-lg">
+        Explorar categorías <app-icon name="arrow-right" [size]="18" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<app-footer />
+
+<!-- VISTA RÁPIDA -->
+@if (seleccionado(); as p) {
+  <div class="overlay" (click)="cerrar()">
+    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="cerrar" (click)="cerrar()" aria-label="Cerrar">
+        <app-icon name="close" [size]="20" />
+      </button>
+
+      <div class="modal-img">
+        @if (p.imagenUrl) {
+          <img [src]="p.imagenUrl" [alt]="p.nombre" />
+        } @else {
+          <span class="sin-imagen"><app-icon name="image" [size]="64" /></span>
+        }
+      </div>
+
+      <div class="modal-info">
+        @if (p.categoriaNombre) { <span class="card-cat">{{ p.categoriaNombre }}</span> }
+        <h2>{{ p.nombre }}</h2>
+        <p class="precio grande">$ {{ p.precio | number: '1.0-0' }}</p>
+        <p class="desc">{{ p.descripcion || 'Sin descripción.' }}</p>
+        <p class="stock">
+          @if (p.stock > 0) { Disponibles: {{ p.stock }} unidades } @else { Producto agotado }
+        </p>
+
+        @if (p.stock > 0) {
+          <div class="compra">
+            <div class="cantidad">
+              <button type="button" (click)="cambiarCantidad(-1)" aria-label="Menos">−</button>
+              <span>{{ cantidadModal() }}</span>
+              <button type="button" (click)="cambiarCantidad(1)" aria-label="Más">+</button>
+            </div>
+            <button type="button" class="btn btn-orange btn-lg" (click)="agregarDesdeModal()">
+              <app-icon name="cart" [size]="18" /> Agregar al carrito
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

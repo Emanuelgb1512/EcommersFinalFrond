@@ -1,0 +1,8 @@
+<div class="toasts">
+  @for (t of toast.toasts(); track t.id) {
+    <div class="toast" [class.exito]="t.tipo === 'exito'" [class.error]="t.tipo === 'error'"
+         [class.info]="t.tipo === 'info'" (click)="toast.cerrar(t.id)">
+      {{ t.mensaje }}
+    </div>
+  }
+</div>

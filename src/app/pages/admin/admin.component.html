@@ -1,0 +1,261 @@
+<div class="shell">
+  <aside class="sidebar">
+    <app-logo [claro]="true" />
+    <span class="rol-chip"><app-icon name="shield" [size]="14" /> Administrador</span>
+
+    <nav class="side-nav">
+      <button type="button" [class.activo]="seccion() === 'productos'" (click)="seccion.set('productos')">
+        <app-icon name="box" [size]="18" /> Productos
+      </button>
+      <button type="button" [class.activo]="seccion() === 'categorias'" (click)="seccion.set('categorias')">
+        <app-icon name="tag" [size]="18" /> Categorías
+      </button>
+      <button type="button" [class.activo]="seccion() === 'pedidos'" (click)="seccion.set('pedidos')">
+         <app-icon name="truck" [size]="18" /> Pedidos y pagos
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <p class="quien">{{ auth.usuario()?.nombre }}<small>{{ auth.usuario()?.email }}</small></p>
+      <a routerLink="/" class="side-link"><app-icon name="home" [size]="18" /> Ver tienda</a>
+      <button type="button" class="side-link" (click)="salir()"><app-icon name="logout" [size]="18" /> Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    @if (seccion() === 'productos') {
+      <header class="main-head">
+        <div>
+          <h1>Productos</h1>
+          <p>{{ total() }} en total</p>
+        </div>
+        <button type="button" class="btn btn-orange" (click)="abrirNuevo()">
+          <app-icon name="plus" [size]="18" /> Nuevo producto
+        </button>
+      </header>
+
+      <div class="toolbar">
+        <div class="search-admin">
+          <app-icon name="search" [size]="18" />
+          <input type="text" [(ngModel)]="busqueda" (keyup.enter)="buscar()" placeholder="Buscar por nombre o descripción..." />
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" (click)="buscar()">Buscar</button>
+      </div>
+
+      <section class="panel">
+        @if (cargando()) {
+          <p class="vacio">Cargando...</p>
+        } @else if (productos().length === 0) {
+          <p class="vacio">No hay productos. Crea el primero con “Nuevo producto”.</p>
+        } @else {
+          <div class="tabla-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Estado</th>
+                  <th class="der">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of productos(); track p.id) {
+                  <tr>
+                    <td>
+                      <div class="celda-prod">
+                        @if (p.imagenUrl) {
+                          <img class="thumb" [src]="p.imagenUrl" [alt]="p.nombre" />
+                        } @else {
+                          <span class="thumb vacia"><app-icon name="image" [size]="20" /></span>
+                        }
+                        <strong>{{ p.nombre }}</strong>
+                      </div>
+                    </td>
+                    <td>{{ p.categoriaNombre || '—' }}</td>
+                    <td>$ {{ p.precio | number: '1.0-0' }}</td>
+                    <td [class.bajo]="p.stock <= 5">{{ p.stock }}</td>
+                    <td>
+                      <span class="estado" [class.on]="p.activo">{{ p.activo ? 'Activo' : 'Oculto' }}</span>
+                    </td>
+                    <td class="der">
+                      <button type="button" class="accion" (click)="abrirEditar(p)" aria-label="Editar" title="Editar">
+                        <app-icon name="edit" [size]="17" />
+                      </button>
+                      <button type="button" class="accion peligro" (click)="pedirEliminar('productos', p.id, p.nombre)" aria-label="Eliminar" title="Eliminar">
+                        <app-icon name="trash" [size]="17" />
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      @if (totalPaginas() > 1) {
+        <nav class="paginacion">
+          <button type="button" (click)="irAPagina(pagina() - 1)" [disabled]="pagina() === 1" aria-label="Anterior">
+            <app-icon name="chevron-left" [size]="18" />
+          </button>
+          <span>Página {{ pagina() }} de {{ totalPaginas() }}</span>
+          <button type="button" (click)="irAPagina(pagina() + 1)" [disabled]="pagina() === totalPaginas()" aria-label="Siguiente">
+            <app-icon name="chevron-right" [size]="18" />
+          </button>
+        </nav>
+      }
+    } @else if (seccion() === 'categorias') {
+      <header class="main-head">
+        <div>
+          <h1>Categorías</h1>
+          <p>{{ categorias().length }} en total</p>
+        </div>
+      </header>
+
+      <section class="panel form-cat">
+        <h2>{{ catEditandoId() === null ? 'Nueva categoría' : 'Editar categoría' }}</h2>
+        <div class="fila-cat">
+          <input class="form-control" type="text" placeholder="Nombre (ej: Fútbol)" [(ngModel)]="catNombre" (keyup.enter)="guardarCategoria()" />
+          <input class="form-control" type="text" placeholder="Descripción (opcional)" [(ngModel)]="catDescripcion" (keyup.enter)="guardarCategoria()" />
+          <button type="button" class="btn btn-orange" (click)="guardarCategoria()">
+            {{ catEditandoId() === null ? 'Crear' : 'Guardar' }}
+          </button>
+          @if (catEditandoId() !== null) {
+            <button type="button" class="btn btn-outline" (click)="cancelarCategoria()">Cancelar</button>
+          }
+        </div>
+      </section>
+
+      <section class="panel">
+        @if (categorias().length === 0) {
+          <p class="vacio">Aún no hay categorías.</p>
+        } @else {
+          <div class="tabla-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Productos activos</th>
+                  <th class="der">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of categorias(); track c.id) {
+                  <tr>
+                    <td><strong>{{ c.nombre }}</strong></td>
+                    <td>{{ c.descripcion || '—' }}</td>
+                    <td>{{ c.cantidadProductos }}</td>
+                    <td class="der">
+                      <button type="button" class="accion" (click)="editarCategoria(c)" aria-label="Editar" title="Editar">
+                        <app-icon name="edit" [size]="17" />
+                      </button>
+                      <button type="button" class="accion peligro" (click)="pedirEliminar('categorias', c.id, c.nombre)" aria-label="Eliminar" title="Eliminar">
+                        <app-icon name="trash" [size]="17" />
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+        } @else {
+      <app-admin-pedidos />
+    }
+  </main>
+</div>
+
+<!-- MODAL: CREAR / EDITAR PRODUCTO -->
+@if (modalAbierto()) {
+  <div class="overlay" (click)="cerrarModal()">
+    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="modal-head">
+        <h2>{{ editandoId() === null ? 'Nuevo producto' : 'Editar producto' }}</h2>
+        <button type="button" class="accion" (click)="cerrarModal()" aria-label="Cerrar"><app-icon name="close" [size]="20" /></button>
+      </header>
+
+      <div class="modal-body">
+        <div class="col-campos">
+          <label class="campo">Nombre
+            <input class="form-control" type="text" [(ngModel)]="nombre" placeholder="Balón de fútbol Pro" />
+          </label>
+
+          <label class="campo">Descripción
+            <textarea class="form-control" rows="3" [(ngModel)]="descripcion" placeholder="Describe el producto"></textarea>
+          </label>
+
+          <div class="fila">
+            <label class="campo">Precio (COP)
+              <input class="form-control" type="number" min="0" [(ngModel)]="precio" placeholder="89000" />
+            </label>
+            <label class="campo">Stock
+              <input class="form-control" type="number" min="0" [(ngModel)]="stock" placeholder="25" />
+            </label>
+          </div>
+
+          <label class="campo">Categoría
+            <select class="form-control" [(ngModel)]="categoriaId">
+              <option [ngValue]="null">Sin categoría</option>
+              @for (c of categorias(); track c.id) {
+                <option [ngValue]="c.id">{{ c.nombre }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="check">
+            <input type="checkbox" [(ngModel)]="activo" /> Visible en la tienda
+          </label>
+        </div>
+
+        <div class="col-imagen">
+          <span class="etiqueta">Imagen</span>
+          <div class="preview">
+            @if (vistaPrevia) {
+              <img [src]="vistaPrevia" alt="Vista previa" />
+            } @else {
+              <span><app-icon name="image" [size]="40" /><br />Sin imagen</span>
+            }
+          </div>
+          <label class="btn btn-outline btn-sm subir">
+            <app-icon name="image" [size]="16" /> Elegir imagen
+            <input type="file" accept="image/*" hidden (change)="onArchivo($event)" />
+          </label>
+          @if (editandoId() !== null) {
+            <small>Si no eliges otra, se conserva la actual.</small>
+          }
+        </div>
+      </div>
+
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button type="button" class="btn btn-orange" [disabled]="guardando()" (click)="guardar()">
+          {{ guardando() ? 'Guardando...' : (editandoId() === null ? 'Crear producto' : 'Guardar cambios') }}
+        </button>
+      </footer>
+    </div>
+  </div>
+}
+
+<!-- MODAL: CONFIRMAR ELIMINACIÓN -->
+@if (confirmacion(); as c) {
+  <div class="overlay" (click)="confirmacion.set(null)">
+    <div class="modal modal-sm" role="alertdialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="confirmar">
+        <h2>¿Eliminar “{{ c.nombre }}”?</h2>
+        @if (c.tipo === 'productos') {
+          <p>Si el producto ya tiene ventas, se ocultará de la tienda para conservar el historial de pedidos. Si no, se borrará junto con su imagen.</p>
+        } @else {
+          <p>Los productos de esta categoría quedarán sin categoría.</p>
+        }
+        <div class="confirmar-botones">
+          <button type="button" class="btn btn-outline" (click)="confirmacion.set(null)">Cancelar</button>
+          <button type="button" class="btn btn-danger" (click)="confirmarEliminar()">Sí, eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

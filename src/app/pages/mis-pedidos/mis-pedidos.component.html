@@ -1,0 +1,68 @@
+<app-navbar />
+
+<main class="page container">
+  <h1>Mis pedidos</h1>
+
+  @if (cargando()) {
+    <p class="msg">Cargando...</p>
+  } @else if (pedidos().length === 0) {
+    <div class="vacio">
+      <app-icon name="box" [size]="48" />
+      <h2>Aún no tienes pedidos</h2>
+      <p>Cuando compres, tus pedidos aparecerán aquí.</p>
+      <a routerLink="/" fragment="productos" class="btn btn-orange btn-lg">Ir a la tienda</a>
+    </div>
+  } @else {
+    <div class="lista">
+      @for (p of pedidos(); track p.id) {
+        <article class="pedido" [class.nuevo]="p.id === nuevoId">
+          <header class="cab">
+            <div>
+              <h2>Pedido #{{ p.id }}</h2>
+              <small>{{ fecha(p.fecha) | date: 'dd/MM/yyyy HH:mm' }}</small>
+            </div>
+            <div class="badges">
+              <span class="badge" [class]="'badge ' + claseEstado(p.estado)">{{ p.estado }}</span>
+              <span class="badge" [class]="'badge ' + claseEstado(p.estadoPago)">Pago: {{ etiquetaPago(p.estadoPago) }}</span>
+            </div>
+          </header>
+
+          <div class="items">
+            @for (i of p.items; track i.productoId) {
+              <div class="item">
+                @if (i.imagenUrl) {
+                  <img [src]="i.imagenUrl" [alt]="i.nombre" />
+                } @else {
+                  <span class="ph"><app-icon name="image" [size]="20" /></span>
+                }
+                <div class="datos">
+                  <strong>{{ i.nombre }}</strong>
+                  <small>{{ i.cantidad }} × $ {{ i.precioUnitario | number: '1.0-0' }}</small>
+                </div>
+                <span class="monto">$ {{ i.subtotal | number: '1.0-0' }}</span>
+              </div>
+            }
+          </div>
+
+          <footer class="pie">
+            <div class="envio">
+              <small>Envío a</small>
+              <span>{{ p.direccionEnvio }}, {{ p.ciudad }}</span>
+              <small>Pago: {{ p.metodoPago }} · Ref. {{ p.referencia }}</small>
+            </div>
+            <div class="totales">
+              <span>Subtotal: $ {{ p.subtotal | number: '1.0-0' }}</span>
+              <span>IVA: $ {{ p.impuestos | number: '1.0-0' }}</span>
+              <strong>Total: $ {{ p.total | number: '1.0-0' }}</strong>
+              @if (puedeCancelar(p)) {
+                <button type="button" class="btn btn-outline btn-sm" (click)="cancelar(p)">Cancelar pedido</button>
+              }
+            </div>
+          </footer>
+        </article>
+      }
+    </div>
+  }
+</main>
+
+<app-footer />

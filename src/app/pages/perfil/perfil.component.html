@@ -1,0 +1,114 @@
+<app-navbar />
+
+<main class="page container">
+  <!-- CABECERA CON FOTO -->
+  <section class="cabecera">
+    <div class="foto">
+      <app-avatar [nombre]="auth.usuario()?.nombre ?? ''" [fotoUrl]="auth.usuario()?.fotoUrl" [size]="132" />
+      <button type="button" class="camara" [disabled]="subiendoFoto()" (click)="archivo.click()" aria-label="Cambiar foto">
+        <app-icon name="camera" [size]="18" />
+      </button>
+      @if (subiendoFoto()) { <span class="cargando-foto">Subiendo...</span> }
+    </div>
+
+    <div class="quien">
+      <h1>{{ auth.usuario()?.nombre }}</h1>
+      <p>{{ auth.usuario()?.email }}</p>
+      <span class="rol" [class.admin]="auth.esAdmin()">{{ auth.esAdmin() ? 'Administrador' : 'Cliente' }}</span>
+
+      <div class="foto-acciones">
+        <input #archivo type="file" accept="image/*" hidden (change)="onFoto($event)" />
+        <button type="button" class="btn btn-orange btn-sm" [disabled]="subiendoFoto()" (click)="archivo.click()">
+          <app-icon name="camera" [size]="16" /> {{ auth.usuario()?.fotoUrl ? 'Cambiar foto' : 'Subir foto' }}
+        </button>
+        @if (auth.usuario()?.fotoUrl) {
+          <button type="button" class="btn btn-outline btn-sm" [disabled]="subiendoFoto()" (click)="quitarFoto()">
+            <app-icon name="trash" [size]="16" /> Quitar foto
+          </button>
+        }
+      </div>
+      <small>Se recorta en cuadrado. Formatos JPG, PNG o WEBP.</small>
+    </div>
+  </section>
+
+  <div class="columnas">
+    <!-- DATOS PERSONALES -->
+    <form class="panel" [formGroup]="form" (ngSubmit)="guardarDatos()" novalidate>
+      <h2>Datos personales</h2>
+
+      <div class="field">
+        <label for="nombre">Nombre completo</label>
+        <input id="nombre" class="form-control" type="text" formControlName="nombre" autocomplete="name" />
+        @if (invalidoForm('nombre')) { <small class="error-text">El nombre es obligatorio.</small> }
+      </div>
+
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input id="email" class="form-control" type="email" [value]="auth.usuario()?.email" disabled />
+        <small class="ayuda">El correo no se puede cambiar.</small>
+      </div>
+
+      <div class="fila-2">
+        <div class="field">
+          <label for="telefono">Teléfono</label>
+          <input id="telefono" class="form-control" type="tel" formControlName="telefono" placeholder="3001234567" autocomplete="tel" />
+        </div>
+        <div class="field">
+          <label for="ciudad">Ciudad</label>
+          <input id="ciudad" class="form-control" type="text" formControlName="ciudad" placeholder="Bucaramanga" autocomplete="address-level2" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="direccion">Dirección de envío</label>
+        <input id="direccion" class="form-control" type="text" formControlName="direccion" placeholder="Calle 10 # 20-30, apto 401" autocomplete="street-address" />
+      </div>
+
+      <p class="ayuda">Estos datos se cargan solos cuando haces un pedido.</p>
+
+      <button type="submit" class="btn btn-orange" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+    </form>
+
+    <!-- CONTRASEÑA -->
+    <form class="panel" [formGroup]="passForm" (ngSubmit)="cambiarPassword()" novalidate>
+      <h2>Contraseña</h2>
+
+      <div class="field">
+        <label for="actual">Contraseña actual</label>
+        <input id="actual" class="form-control" [type]="mostrarPass ? 'text' : 'password'" formControlName="actual" autocomplete="current-password" />
+        <small class="ayuda">Si creaste tu cuenta con Google, déjala vacía.</small>
+      </div>
+
+      <div class="field">
+        <label for="nueva">Nueva contraseña</label>
+        <input id="nueva" class="form-control" [type]="mostrarPass ? 'text' : 'password'" formControlName="nueva" placeholder="Mín. 6 caracteres" autocomplete="new-password" />
+        @if (invalidoPass('nueva')) { <small class="error-text">Debe tener mínimo 6 caracteres.</small> }
+      </div>
+
+      <div class="field">
+        <label for="confirmar">Confirmar nueva contraseña</label>
+        <input id="confirmar" class="form-control" [type]="mostrarPass ? 'text' : 'password'" formControlName="confirmar" autocomplete="new-password" />
+        @if (noCoinciden()) { <small class="error-text">Las contraseñas no coinciden.</small> }
+      </div>
+
+      <label class="check">
+        <input type="checkbox" [checked]="mostrarPass" (change)="mostrarPass = !mostrarPass" /> Mostrar contraseñas
+      </label>
+
+      <button type="submit" class="btn btn-dark" [disabled]="cambiandoPass()">
+        {{ cambiandoPass() ? 'Actualizando...' : 'Cambiar contraseña' }}
+      </button>
+    </form>
+  </div>
+
+  <div class="enlaces">
+    <a routerLink="/mis-pedidos" class="btn btn-outline"><app-icon name="truck" [size]="18" /> Mis pedidos</a>
+    @if (auth.esAdmin()) {
+      <a routerLink="/admin" class="btn btn-outline"><app-icon name="shield" [size]="18" /> Panel de administración</a>
+    }
+  </div>
+</main>
+
+<app-footer />

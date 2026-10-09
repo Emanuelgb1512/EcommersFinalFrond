@@ -1,0 +1,50 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <app-logo [claro]="true" />
+      <div>
+        <h1>Entrena. <em>Compite.</em> Gana.</h1>
+        <p>Todo el equipamiento deportivo que necesitas, en un solo lugar.</p>
+      </div>
+      <a routerLink="/" class="volver"><app-icon name="arrow-left" [size]="16" /> Volver a la tienda</a>
+    </div>
+
+    <form class="auth-form-wrap" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+      <h2>Iniciar sesión</h2>
+      <p class="sub">Ingresa a tu cuenta para continuar</p>
+
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <div class="input-wrap" [class.invalid]="invalido('email')">
+          <app-icon name="mail" [size]="18" />
+          <input id="email" type="email" formControlName="email" placeholder="tu@email.com" autocomplete="email" />
+        </div>
+        @if (invalido('email')) { <small class="error-text">Ingresa un correo válido.</small> }
+      </div>
+
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <div class="input-wrap" [class.invalid]="invalido('password')">
+          <app-icon name="lock" [size]="18" />
+          <input id="password" [type]="mostrarPassword ? 'text' : 'password'" formControlName="password"
+                 placeholder="Ingresa tu contraseña" autocomplete="current-password" />
+          <button type="button" class="eye" (click)="mostrarPassword = !mostrarPassword" aria-label="Mostrar contraseña">
+            <app-icon [name]="mostrarPassword ? 'eye-off' : 'eye'" [size]="18" />
+          </button>
+        </div>
+        @if (invalido('password')) { <small class="error-text">La contraseña es obligatoria.</small> }
+      </div>
+
+      <button type="submit" class="btn btn-orange btn-block btn-lg" [disabled]="cargando()">
+        {{ cargando() ? 'Ingresando...' : 'Iniciar sesión' }}
+      </button>
+
+      <app-google-button (credencial)="onGoogle($event)" />
+
+      <p class="auth-switch">
+        ¿No tienes una cuenta?
+        <a routerLink="/registro" queryParamsHandling="preserve">Regístrate</a>
+      </p>
+    </form>
+  </div>
+</div>

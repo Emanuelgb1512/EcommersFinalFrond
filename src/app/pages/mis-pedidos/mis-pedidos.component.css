@@ -1,0 +1,38 @@
+:host { display: block; }
+.page { padding-top: 40px; padding-bottom: 64px; min-height: 62vh; }
+h1 { font-size: 52px; margin-bottom: 24px; }
+.msg { color: var(--muted); }
+
+.lista { display: grid; gap: 20px; max-width: 980px; }
+.pedido { background: #fff; border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+.pedido.nuevo { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.15); }
+.cab { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 18px 22px; background: #fafbfc; border-bottom: 1px solid var(--border); }
+.cab h2 { font-size: 28px; }
+.cab small { color: var(--muted); }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.items { padding: 6px 22px; }
+.item { display: grid; grid-template-columns: 52px 1fr auto; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.item:last-child { border-bottom: none; }
+.item img, .ph { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: #eef0f4; }
+.ph { display: grid; place-items: center; color: #aab2c0; }
+.datos { display: grid; }
+.datos small { color: var(--muted); font-size: 12.5px; }
+.monto { font-weight: 700; }
+
+.pie { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding: 18px 22px; border-top: 1px solid var(--border); }
+.envio { display: grid; gap: 2px; font-size: 14px; }
+.envio small { color: var(--muted); font-size: 12px; }
+.totales { display: grid; gap: 4px; justify-items: end; font-size: 14px; color: var(--muted); }
+.totales strong { color: var(--ink); font-size: 20px; }
+.totales .btn { margin-top: 8px; }
+
+.vacio { text-align: center; display: grid; justify-items: center; gap: 10px; padding: 70px 20px; color: var(--muted); }
+.vacio h2 { font-size: 36px; color: var(--ink); }
+.vacio .btn { margin-top: 12px; }
+@media (max-width: 560px) { h1 { font-size: 40px; } .totales { justify-items: start; } }
+.pedido { animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; transition: box-shadow 0.2s; }
+.pedido:hover { box-shadow: var(--shadow-md); }
+.pedido:nth-child(2) { animation-delay: 0.08s; }
+.pedido:nth-child(3) { animation-delay: 0.16s; }
+.pedido:nth-child(4) { animation-delay: 0.24s; }

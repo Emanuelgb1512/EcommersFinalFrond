@@ -1,0 +1,89 @@
+<app-navbar />
+
+<main class="page container">
+  <h1>Finalizar compra</h1>
+
+  @if (carrito.items().length === 0) {
+    <div class="vacio">
+      <h2>Tu carrito está vacío</h2>
+      <p>Agrega productos para poder finalizar tu compra.</p>
+      <a routerLink="/" fragment="productos" class="btn btn-orange btn-lg">Ir a la tienda</a>
+    </div>
+  } @else {
+    <form class="layout" [formGroup]="form" (ngSubmit)="confirmar()" novalidate>
+      <div class="col-form">
+        <section class="panel">
+          <h2>Datos de envío</h2>
+
+          <div class="field">
+            <label for="direccion">Dirección</label>
+            <input id="direccion" class="form-control" type="text" formControlName="direccionEnvio" placeholder="Calle 10 # 20-30, apto 401" autocomplete="street-address" />
+            @if (invalido('direccionEnvio')) { <small class="error-text">La dirección es obligatoria.</small> }
+          </div>
+
+          <div class="fila-2">
+            <div class="field">
+              <label for="ciudad">Ciudad</label>
+              <input id="ciudad" class="form-control" type="text" formControlName="ciudad" placeholder="Bucaramanga" autocomplete="address-level2" />
+              @if (invalido('ciudad')) { <small class="error-text">La ciudad es obligatoria.</small> }
+            </div>
+            <div class="field">
+              <label for="telefono">Teléfono</label>
+              <input id="telefono" class="form-control" type="tel" formControlName="telefono" placeholder="3001234567" autocomplete="tel" />
+              @if (invalido('telefono')) { <small class="error-text">Ingresa un teléfono válido.</small> }
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Método de pago</h2>
+          <div class="metodos">
+            @for (m of metodos; track m.valor) {
+              <label class="metodo" [class.sel]="metodoActual() === m.valor">
+                <input type="radio" formControlName="metodoPago" [value]="m.valor" />
+                <span><strong>{{ m.titulo }}</strong><small>{{ m.desc }}</small></span>
+              </label>
+            }
+          </div>
+          <p class="aviso-sim">
+            <app-icon name="lock" [size]="16" />
+            Los pagos son simulados: no se realiza ningún cobro real.
+          </p>
+        </section>
+      </div>
+
+      <aside class="panel resumen">
+        <h2>Tu pedido</h2>
+
+        <div class="items">
+          @for (i of carrito.items(); track i.productoId) {
+            <div class="res-item">
+              @if (i.imagenUrl) {
+                <img [src]="i.imagenUrl" [alt]="i.nombre" />
+              } @else {
+                <span class="ph"><app-icon name="image" [size]="20" /></span>
+              }
+              <div class="datos">
+                <strong>{{ i.nombre }}</strong>
+                <small>{{ i.cantidad }} × $ {{ i.precioUnitario | number: '1.0-0' }}</small>
+                @if (!i.activo || i.cantidad > i.stock) { <small class="malo">Sin stock suficiente</small> }
+              </div>
+              <span class="monto">$ {{ i.precioUnitario * i.cantidad | number: '1.0-0' }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="fila"><span>Subtotal</span><span>$ {{ carrito.subtotal() | number: '1.0-0' }}</span></div>
+        <div class="fila"><span>IVA ({{ ivaPct }}%)</span><span>$ {{ carrito.iva() | number: '1.0-0' }}</span></div>
+        <div class="fila total"><span>Total a pagar</span><span>$ {{ carrito.total() | number: '1.0-0' }}</span></div>
+
+        <button type="submit" class="btn btn-orange btn-block btn-lg" [disabled]="enviando() || hayProblemas()">
+          {{ enviando() ? 'Procesando...' : 'Confirmar pedido' }}
+        </button>
+        <a routerLink="/carrito" class="volver-carrito">Volver al carrito</a>
+      </aside>
+    </form>
+  }
+</main>
+
+<app-footer />
