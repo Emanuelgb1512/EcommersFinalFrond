@@ -1,0 +1,62 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--ink);
+  overflow: hidden;
+}
+.page::before {
+  content: '';
+  position: absolute;
+  width: 520px; height: 520px;
+  right: -140px; top: -160px;
+  border-radius: 50%;
+  background: var(--orange);
+  opacity: 0.9;
+  animation: float 9s ease-in-out infinite;
+}
+.page::after {
+  content: '';
+  position: absolute;
+  width: 380px; height: 380px;
+  left: -120px; bottom: -140px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  animation: spin 50s linear infinite;
+}
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: var(--shadow-lg);
+  animation: popIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.chip-admin {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 22px 0 10px;
+  padding: 6px 12px; border-radius: 999px;
+  background: rgba(255, 90, 31, 0.12); color: var(--orange-dark);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+}
+h1 { font-size: 34px; }
+.sub { color: var(--muted); font-size: 14px; margin: 6px 0 22px; }
+
+.clave { padding-top: 6px; border-top: 1px dashed var(--border); }
+.clave label { margin-top: 12px; }
+
+.enlaces { display: grid; gap: 12px; justify-items: center; margin-top: 20px; font-size: 13px; font-weight: 600; }
+.enlaces a { color: var(--orange); }
+.enlaces a:hover { text-decoration: underline; }
+.atras {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--muted) !important;
+}
+.atras:hover { color: var(--ink) !important; text-decoration: none !important; }
+
+@media (max-width: 520px) { .card { padding: 28px 22px; } }

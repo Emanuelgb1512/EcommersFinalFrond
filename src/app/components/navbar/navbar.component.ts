@@ -22,7 +22,6 @@ export class NavbarComponent {
   private el = inject(ElementRef);
 
   menuAbierto = signal(false);
-  scrolled = signal(false);
   bump = signal(false);
   inicial = computed(() => (this.auth.usuario()?.nombre ?? '?').trim().charAt(0).toUpperCase());
 
@@ -38,11 +37,6 @@ export class NavbarComponent {
         setTimeout(() => this.bump.set(false), 700);
       });
     });
-  }
-
-  @HostListener('window:scroll')
-  alHacerScroll(): void {
-    this.scrolled.set(window.scrollY > 20);
   }
 
   @HostListener('document:click', ['$event'])

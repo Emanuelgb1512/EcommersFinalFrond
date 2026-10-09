@@ -4,6 +4,7 @@ import { CategoriasComponent } from './pages/categorias/categorias.component';
 import { LoginComponent } from './pages/login/login.component';
 import { RegistroComponent } from './pages/registro/registro.component';
 import { AdminLoginComponent } from './pages/admin-login/admin-login.component';
+import { AdminRegistroComponent } from './pages/admin-registro/admin-registro.component';
 import { AdminComponent } from './pages/admin/admin.component';
 import { CarritoComponent } from './pages/carrito/carrito.component';
 import { CheckoutComponent } from './pages/checkout/checkout.component';
@@ -21,6 +22,7 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
   { path: 'registro', component: RegistroComponent, canActivate: [guestGuard] },
   { path: 'admin/login', component: AdminLoginComponent },
+  { path: 'admin/registro', component: AdminRegistroComponent },
   { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }
 ];

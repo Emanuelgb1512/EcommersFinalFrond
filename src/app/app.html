@@ -1,7 +1,8 @@
-<div class="progreso"><span [style.width.%]="progreso()"></span></div>
+<div class="progreso"><span #barra></span></div>
 
 <router-outlet />
 <app-toasts />
+<app-contacto />
 
 <button type="button" class="btn-subir" [class.visible]="mostrarSubir()" (click)="subir()" aria-label="Volver arriba">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"

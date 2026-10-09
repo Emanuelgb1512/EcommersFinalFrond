@@ -3,7 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AuthResponse, LoginDatos, RegistroDatos, Usuario } from '../models/usuario.model';
+import {
+  AuthResponse, LoginDatos, RegistroAdminDatos, RegistroDatos, Usuario
+} from '../models/usuario.model';
 
 const CLAVE_TOKEN = 'sz_token';
 const CLAVE_USUARIO = 'sz_usuario';
@@ -24,6 +26,11 @@ export class AuthService {
 
   registrar(datos: RegistroDatos): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.api}/Register`, datos)
+      .pipe(tap(res => this.guardarSesion(res)));
+  }
+
+  registrarAdmin(datos: RegistroAdminDatos): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.api}/Register-Admin`, datos)
       .pipe(tap(res => this.guardarSesion(res)));
   }
 

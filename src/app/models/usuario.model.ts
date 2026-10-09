@@ -33,3 +33,7 @@ export interface PerfilDatos {
   direccion: string | null;
   ciudad: string | null;
 }
+
+export interface RegistroAdminDatos extends RegistroDatos {
+  claveAdmin: string;
+}

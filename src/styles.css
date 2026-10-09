@@ -212,7 +212,6 @@ textarea.form-control { resize: vertical; }
 /* =========================================================
    ANIMACIONES Y DETALLES
    ========================================================= */
-html { scroll-behavior: smooth; }
 ::selection { background: var(--orange); color: #fff; }
 :focus-visible { outline: 3px solid rgba(255, 90, 31, 0.45); outline-offset: 2px; }
 

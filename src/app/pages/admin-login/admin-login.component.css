@@ -51,3 +51,12 @@ h1 { font-size: 36px; }
 .card { animation: popIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
 .page::before { animation: float 9s ease-in-out infinite; }
 .page::after { animation: spin 50s linear infinite; }
+.crear {
+  display: block;
+  margin-top: 18px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--orange);
+}
+.crear:hover { text-decoration: underline; }
